@@ -1,6 +1,7 @@
+import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Board {
+public class Board implements Iterable{
 	private final int[][] board;
 	private int zeroX = 0;
 	private int zeroY = 0;
@@ -94,10 +95,21 @@ public class Board {
 
 	public class BoardIterator implements Iterator<Board> {
 		int n = 0;
-		Board base;
+		ArrayList<Board> adj = new ArrayList<Board>();
 
 		public BoardIterator(Board base) {
-			this.base = base;
+			Board left = base.left();
+			Board right = base.right();
+			Board above = base.above();
+			Board below = base.below();
+			if (left != null)
+				adj.add(left);
+			if (right != null)
+				adj.add(right);
+			if (above != null)
+				adj.add(above);
+			if (below != null)
+				adj.add(below);
 		}
 
 		public boolean hasNext() {
@@ -185,6 +197,10 @@ public class Board {
 		System.out.println("right \n" + b.right());
 		System.out.println("above \n" + b.above());
 		System.out.println("below \n" + b.below());
+	}
+
+	public Iterator<Board> iterator() {
+		return new BoardIterator(this);
 	}
 
 }
