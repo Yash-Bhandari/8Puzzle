@@ -76,7 +76,7 @@ public class Board {
     }
 
     public String toString() {
-        String out = "";
+        String out = dimension() + "\n";
         for (int i = 0; i < dimension(); i++) {
             for (int j = 0; j < dimension(); j++) {
                 out += board[i][j];

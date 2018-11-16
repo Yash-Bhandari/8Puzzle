@@ -12,6 +12,7 @@ public class Solver {
     private Comparator<Node> manhattan = new Manhattan();
 
     public Solver(Board initial) {
+        if (initial == null) throw new IllegalArgumentException();
         MinPQ<Node> pq = new MinPQ<Node>(manhattan);
         MinPQ<Node> twin = new MinPQ<Node>(manhattan);
         pq.insert(new Node(null, initial));
@@ -89,7 +90,7 @@ public class Solver {
 
     public static void main(String[] args) {
         // create initial board from file
-        In in = new In("test/puzzle28.txt");
+        In in = new In("test/puzzle4x4-unsolvable.txt");
         int n = in.readInt();
         int[][] blocks = new int[n][n];
         for (int i = 0; i < n; i++)
