@@ -30,11 +30,11 @@ public class Board {
     public boolean isGoal() {
         return hamming() == 0;
     }
-    
+
     public int hamming() {
         return hamming;
     }
-    
+
     public int manhattan() {
         return manhattan;
     }
@@ -42,15 +42,11 @@ public class Board {
     public Board twin() {
         int[][] out = copy(board);
         int temp;
-        int i1 = 0, j1 = 0, i2 = 0, j2 = 0;
-        while (out[i1][j1] == 0) {
-            i1 = (int) (Math.random() * dimension());
-            j1 = (int) (Math.random() * dimension());
-        }
-        while (out[i2][j2] == 0 || (i2 == i1 && j2 == j1)) {
-            i2 = (int) (Math.random() * dimension());
-            j2 = (int) (Math.random() * dimension());
-        }
+        int i1 = 0, j1 = 0, i2 = 1, j2 = 0;
+        if (out[i1][j1] == 0)
+            j1++;
+        if (out[i2][j2] == 0 || (i2 == i1 && j2 == j1))
+            j2++;
         temp = out[i1][j1];
         out[i1][j1] = out[i2][j2];
         out[i2][j2] = temp;
@@ -191,8 +187,7 @@ public class Board {
     public static void main(String[] args) {
         int[][] a = { { 4, 8, 2 }, { 3, 6, 5 }, { 1, 7, 0 } };
         Board b = new Board(a);
-        System.out.println(b);
-        System.out.println(b.manhattan());
+        Board c = b.twin().twin();
     }
 
 }

@@ -41,7 +41,7 @@ public class Solver {
     }
     
     public Iterable<Board> solution() {
-        return solution;
+        return isSolvable()? solution : null;
     }
 
     private class Node implements Comparable<Node> {
