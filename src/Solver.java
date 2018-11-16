@@ -31,7 +31,7 @@ public class Solver {
 		}
 
 		public int compareTo(Node n) {
-			return this.val.hamming() - n.val.hamming();
+			return val.hamming() - n.val.hamming();
 		}
 
 	

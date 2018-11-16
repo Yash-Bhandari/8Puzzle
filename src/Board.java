@@ -113,12 +113,11 @@ public class Board implements Iterable{
 		}
 
 		public boolean hasNext() {
-			return n < 4;
+			return n < adj.size();
 		}
 
 		public Board next() {
-			return null;
-
+		    return adj.get(n++);
 		}
 	}
 
