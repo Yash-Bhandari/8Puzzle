@@ -2,3 +2,8 @@
 /Board.class
 /Solver$Node.class
 /Solver.class
+/Solver$Hamming.class
+/Solver$Manhattan.class
+/Board$Adj.class
+/Board$Adj$Iterator.class
+/Board$Adj$BoardIterator.class

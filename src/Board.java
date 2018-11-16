@@ -1,205 +1,198 @@
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Board implements Iterable{
-	private final int[][] board;
-	private int zeroX = 0;
-	private int zeroY = 0;
+public class Board {
+    private final int[][] board;
+    private int zeroX = 0;
+    private int zeroY = 0;
+    private int hamming;
+    private int manhattan;
 
-	public Board(int[][] blocks) {
-		board = blocks;
-		for (int i = 0; i < dimension(); i++) {
-			for (int j = 0; j < dimension(); j++) {
-				if (board[i][j] == 0) {
-					zeroX = j;
-					zeroY = i;
-				}
-			}
-		}
-		assert (board[zeroY][zeroX] == 0);
-	}
+    public Board(int[][] blocks) {
+        board = blocks;
+        for (int i = 0; i < dimension(); i++) {
+            for (int j = 0; j < dimension(); j++) {
+                if (board[i][j] == 0) {
+                    zeroX = j;
+                    zeroY = i;
+                }
+            }
+        }
+        setManhattan();
+        setHamming();
+        assert (board[zeroY][zeroX] == 0);
+    }
 
-	public int dimension() {
-		return board[0].length;
-	}
+    public int dimension() {
+        return board[0].length;
+    }
 
-	public int hamming() {
-		int total = 0;
-		for (int i = 0; i < dimension(); i++) {
-			for (int j = 0; j < dimension(); j++) {
-				int num = board[i][j];
-				int temp = 0;
-				if (num != 0) {
-					temp += Math.abs(i - (num - 1) / 3);
-					temp += Math.abs(j - (num - 1) % 3);
-				}
-				total += temp == 0 ? 0 : 1;
-			}
-		}
-		return total;
-	}
+    public boolean isGoal() {
+        return hamming() == 0;
+    }
+    
+    public int hamming() {
+        return hamming;
+    }
+    
+    public int manhattan() {
+        return manhattan;
+    }
 
-	public int manhattan() {
-		int total = 0;
-		for (int i = 0; i < dimension(); i++) {
-			for (int j = 0; j < dimension(); j++) {
-				int num = board[i][j];
-				if (num != 0) {
-					total += Math.abs(i - (num - 1) / dimension());
-					total += Math.abs(j - (num - 1) % dimension());
-				}
-			}
-		}
-		return total;
-	}
+    public Board twin() {
+        int[][] out = copy(board);
+        int temp;
+        int i1 = 0, j1 = 0, i2 = 0, j2 = 0;
+        while (out[i1][j1] == 0) {
+            i1 = (int) (Math.random() * dimension());
+            j1 = (int) (Math.random() * dimension());
+        }
+        while (out[i2][j2] == 0 || (i2 == i1 && j2 == j1)) {
+            i2 = (int) (Math.random() * dimension());
+            j2 = (int) (Math.random() * dimension());
+        }
+        temp = out[i1][j1];
+        out[i1][j1] = out[i2][j2];
+        out[i2][j2] = temp;
+        return new Board(out);
+    }
 
-	public boolean isGoal() {
-		return hamming() == 0;
-	}
+    @Override
+    public boolean equals(Object Y) {
+        if (Y instanceof Board) {
+            Board a = (Board) Y;
+            if (a.dimension() == dimension()) {
+                boolean equal = true;
+                for (int i = 0; i < dimension(); i++) {
+                    for (int j = 0; j < dimension(); j++) {
+                        if (board[i][j] != a.board[i][j])
+                            equal = false;
+                    }
+                }
+                return equal;
+            }
+        }
+        return false;
+    }
 
-	public Board twin() {
-		int[][] out = board;
-		int temp;
-		int i1 = 0, j1 = 0, i2 = 0, j2 = 0;
-		while (out[i1][j1] == 0) {
-			i1 = (int) (Math.random() * dimension());
-			j1 = (int) (Math.random() * dimension());
-		}
-		while (out[i2][j2] == 0 || (i2 == i1 && j2 == j1)) {
-			i2 = (int) (Math.random() * dimension());
-			j2 = (int) (Math.random() * dimension());
-		}
-		temp = out[i1][j1];
-		out[i1][j1] = out[i2][j2];
-		out[i2][j2] = temp;
-		return new Board(out);
-	}
+    public String toString() {
+        String out = "";
+        for (int i = 0; i < dimension(); i++) {
+            for (int j = 0; j < dimension(); j++) {
+                out += board[i][j];
+                out += " ";
+            }
+            out += "\n";
+        }
+        return out;
+    }
 
-	@Override
-	public boolean equals(Object Y) {
-		if (Y instanceof Board) {
-			Board a = (Board) Y;
-			if (a.dimension() == dimension()) {
-				boolean equal = true;
-				for (int i = 0; i < dimension(); i++) {
-					for (int j = 0; j < dimension(); j++) {
-						if (board[i][j] != a.board[i][j])
-							equal = false;
-					}
-				}
-				return equal;
-			}
-		}
-		return false;
-	}
+    private void setHamming() {
+        int total = 0;
+        for (int i = 0; i < dimension(); i++) {
+            for (int j = 0; j < dimension(); j++) {
+                int num = board[i][j];
+                int temp = 0;
+                if (num != 0) {
+                    temp += Math.abs(i - (num - 1) / dimension());
+                    temp += Math.abs(j - (num - 1) % dimension());
+                }
+                total += temp == 0 ? 0 : 1;
+            }
+        }
+        hamming = total;
+    }
 
-	public class BoardIterator implements Iterator<Board> {
-		int n = 0;
-		ArrayList<Board> adj = new ArrayList<Board>();
+    private void setManhattan() {
+        int total = 0;
+        for (int i = 0; i < dimension(); i++) {
+            for (int j = 0; j < dimension(); j++) {
+                int num = board[i][j];
+                if (num != 0) {
+                    total += Math.abs(i - (num - 1) / dimension());
+                    total += Math.abs(j - (num - 1) % dimension());
+                }
+            }
+        }
+        manhattan = total;
+    }
 
-		public BoardIterator(Board base) {
-			Board left = base.left();
-			Board right = base.right();
-			Board above = base.above();
-			Board below = base.below();
-			if (left != null)
-				adj.add(left);
-			if (right != null)
-				adj.add(right);
-			if (above != null)
-				adj.add(above);
-			if (below != null)
-				adj.add(below);
-		}
+    // Creates board by moving element left of 0 to 0's index
+    private Board left() {
+        if (zeroX > 0) {
+            int[][] temp = copy(board);
+            temp[zeroY][zeroX] = temp[zeroY][zeroX - 1];
+            temp[zeroY][zeroX - 1] = 0;
+            return new Board(temp);
+        }
+        return null;
+    }
 
-		public boolean hasNext() {
-			return n < adj.size();
-		}
+    // Creates board by moving element right of 0 to 0's index
+    private Board right() {
+        if (zeroX < dimension() - 1) {
+            int[][] temp = copy(board);
+            temp[zeroY][zeroX] = temp[zeroY][zeroX + 1];
+            temp[zeroY][zeroX + 1] = 0;
+            return new Board(temp);
+        }
+        return null;
+    }
 
-		public Board next() {
-		    return adj.get(n++);
-		}
-	}
+    // Creates board by moving element above 0 to 0's index
+    private Board above() {
+        if (zeroY > 0) {
+            int[][] temp = copy(board);
+            temp[zeroY][zeroX] = temp[zeroY - 1][zeroX];
+            temp[zeroY - 1][zeroX] = 0;
+            return new Board(temp);
+        }
+        return null;
+    }
 
-	public String toString() {
-		String out = "";
-		for (int i = 0; i < dimension(); i++) {
-			for (int j = 0; j < dimension(); j++) {
-				out += board[i][j];
-				out += " ";
-			}
-			out += "\n";
-		}
-		return out;
-	}
+    // Creates board by moving element below 0 to 0's index
+    private Board below() {
+        if (zeroY < dimension() - 1) {
+            int[][] temp = copy(board);
+            temp[zeroY][zeroX] = temp[zeroY + 1][zeroX];
+            temp[zeroY + 1][zeroX] = 0;
+            return new Board(temp);
+        }
+        return null;
+    }
 
-	// Creates board by moving element left of 0 to 0's index
-	private Board left() {
-		if (zeroX > 0) {
-			int[][] temp = copy(board);
-			temp[zeroY][zeroX] = temp[zeroY][zeroX - 1];
-			temp[zeroY][zeroX - 1] = 0;
-			return new Board(temp);
-		}
-		return null;
-	}
+    private int[][] copy(int[][] a) {
+        int[][] b = new int[a.length][a[0].length];
+        for (int i = 0; i < a.length; i++) {
+            for (int j = 0; j < a[0].length; j++) {
+                b[i][j] = a[i][j];
+            }
+        }
+        return b;
+    }
 
-	// Creates board by moving element right of 0 to 0's index
-	private Board right() {
-		if (zeroX < dimension()) {
-			int[][] temp = copy(board);
-			temp[zeroY][zeroX] = temp[zeroY][zeroX + 1];
-			temp[zeroY][zeroX + 1] = 0;
-			return new Board(temp);
-		}
-		return null;
-	}
+    public Iterable<Board> neighbors() {
+        ArrayList<Board> adj = new ArrayList<Board>();
+        Board left = left();
+        Board right = right();
+        Board above = above();
+        Board below = below();
+        if (left != null)
+            adj.add(left);
+        if (right != null)
+            adj.add(right);
+        if (above != null)
+            adj.add(above);
+        if (below != null)
+            adj.add(below);
+        return adj;
+    }
 
-	// Creates board by moving element above 0 to 0's index
-	private Board above() {
-		if (zeroY > 0) {
-			int[][] temp = copy(board);
-			temp[zeroY][zeroX] = temp[zeroY - 1][zeroX];
-			temp[zeroY - 1][zeroX] = 0;
-			return new Board(temp);
-		}
-		return null;
-	}
-
-	// Creates board by moving element below 0 to 0's index
-	private Board below() {
-		if (zeroY < dimension()) {
-			int[][] temp = copy(board);
-			temp[zeroY][zeroX] = temp[zeroY + 1][zeroX];
-			temp[zeroY + 1][zeroX] = 0;
-			return new Board(temp);
-		}
-		return null;
-	}
-
-	private int[][] copy(int[][] a) {
-		int[][] b = new int[a.length][a[0].length];
-		for (int i = 0; i < a.length; i++) {
-			for (int j = 0; j < a[0].length; j++) {
-				b[i][j] = a[i][j];
-			}
-		}
-		return b;
-	}
-
-	public static void main(String[] args) {
-
-		int[][] a = { { 1, 2, 3 }, { 0, 5, 6 }, { 7, 8, 4 } };
-		Board b = new Board(a);
-		System.out.println("original \n" + b);
-		System.out.println("left \n" + b.left());
-		System.out.println("right \n" + b.right());
-		System.out.println("above \n" + b.above());
-		System.out.println("below \n" + b.below());
-	}
-
-	public Iterator<Board> iterator() {
-		return new BoardIterator(this);
-	}
+    public static void main(String[] args) {
+        int[][] a = { { 4, 8, 2 }, { 3, 6, 5 }, { 1, 7, 0 } };
+        Board b = new Board(a);
+        System.out.println(b);
+        System.out.println(b.manhattan());
+    }
 
 }

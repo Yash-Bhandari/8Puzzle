@@ -1,70 +1,114 @@
 import java.util.Comparator;
-import java.util.Iterator;
+import java.util.LinkedList;
 
+import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
+import edu.princeton.cs.algs4.StdOut;
+
 public class Solver {
-	private boolean solvable;
-	private MinPQ<Node> pq;
-	//private Comparator<Node> hamming = new Hamming();
-	//private Comparator<Node> manhattan = new Manhattan();
-	
-	public Solver(Board initial) {
-		pq = new MinPQ<Node>();
-		pq.insert(new Node(null, initial));
-		delete();
-		for (Node n : pq) {
-			System.out.println(n.val);
-		}
-	}
-	
-	public boolean isSolvable() {
-		return solvable;
-	}
-	
-	private class Node implements Comparable<Node>{
-		public Board val;
-		private Node prev;
-		
-		public Node(Node prev, Board val) {
-			this.prev = prev;
-			this.val = val;
-		}
+    private boolean solvable = false;
+    private LinkedList<Board> solution = new LinkedList<>();
+    private Comparator<Node> hamming = new Hamming();
+    private Comparator<Node> manhattan = new Manhattan();
 
-		public int compareTo(Node n) {
-			return val.hamming() - n.val.hamming();
-		}
+    public Solver(Board initial) {
+        MinPQ<Node> pq = new MinPQ<Node>(manhattan);
+        MinPQ<Node> twin = new MinPQ<Node>(manhattan);
+        pq.insert(new Node(null, initial));
+        twin.insert(new Node(null, initial.twin()));
+        Node current;
+        Node currentTwin;
+        do {
+            current = delete(pq);
+            currentTwin = delete(twin);
+        } while (!current.val.isGoal() && !currentTwin.val.isGoal());
+        if (current.val.isGoal()) {
+            solvable = true;
+            while (current != null) {
+                solution.addFirst(current.val);
+                current = current.prev;
+            }
+        }
+    }
 
-	
-	}
-	
-	/*private class Hamming implements Comparator<Node> {
-		public int compare(Node n1, Node n2) {
-			return n1.val.hamming() - n2.val.hamming();
-		}
-	}
-	
-	private class Manhattan implements Comparator<Node> {
-		public int compare(Node n1, Node n2) {
-			return n1.val.manhattan() - n2.val.manhattan();
-		}
-	}*/
-	
-	private void delete() {
-		Node low = pq.delMin();
-		Iterator<Board> i = low.val.iterator();
-		while (i.hasNext()) {
-			pq.insert(new Node(low, i.next()));
-		}
-	}
-	
-	public static void main(String[] args) {
-		int[][] a = { 
-				{ 1, 2, 3 }, 
-				{ 0, 5, 6 }, 
-				{ 7, 8, 4 } };
-		Board b = new Board(a);
-		Solver s = new Solver(b);
-	}
-	
-	
+    public boolean isSolvable() {
+        return solvable;
+    }
+
+    public int moves() {
+        return solvable ? solution.size() - 1 : -1;
+    }
+    
+    public Iterable<Board> solution() {
+        return solution;
+    }
+
+    private class Node implements Comparable<Node> {
+        public Board val;
+        private Node prev;
+        private int moves;
+        private int hamming;
+        private int manhattan;
+
+        public Node(Node prev, Board val) {
+
+            this.prev = prev;
+            this.val = val;
+            moves = (prev == null) ? 0 : prev.moves + 1;
+            hamming = val.hamming() + moves;
+            manhattan = val.manhattan() + moves;
+        }
+
+        public int compareTo(Node n) {
+            return hamming - n.hamming;
+        }
+
+    }
+
+    private class Hamming implements Comparator<Node> {
+        public int compare(Node n1, Node n2) {
+            return n1.hamming - n2.hamming;
+        }
+    }
+
+    private class Manhattan implements Comparator<Node> {
+        public int compare(Node n1, Node n2) {
+            return n1.manhattan - n2.manhattan;
+        }
+    }
+
+    private Node delete(MinPQ<Node> q) {
+        Node low = q.delMin();
+        Iterable<Board> i = low.val.neighbors();
+        for (Board b : i) {
+            if (low.prev == null || !b.equals(low.prev.val))
+                q.insert(new Node(low, b));
+        }
+        return low;
+    }
+
+    public static void main(String[] args) {
+        // create initial board from file
+        In in = new In("test/puzzle28.txt");
+        int n = in.readInt();
+        int[][] blocks = new int[n][n];
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                blocks[i][j] = in.readInt();
+        Board initial = new Board(blocks);
+        System.out.println(initial);
+
+        // solve the puzzle
+        Solver solver = new Solver(initial);
+
+        // print solution to standard output
+        if (!solver.isSolvable())
+            StdOut.println("No solution possible");
+        else {
+            StdOut.println("Minimum number of moves = " + solver.moves());
+            for (Board board : solver.solution())
+                StdOut.println(board);
+        }
+    }
+
 }
